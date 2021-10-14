@@ -1,4 +1,5 @@
 use std::fmt;
+use std::iter::Iterator;
 use std::cmp::{ Eq, Ordering };
 // Iterate through enums
 use strum_macros::EnumIter;
@@ -39,6 +40,12 @@ impl Card {
   }
 }
 
+impl Ord for Card {
+  fn cmp(&self, other: &Self) -> Ordering {
+      self.rank.cmp(&other.rank)
+  }
+}
+
 impl PartialOrd for Card {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
       Some(self.rank.cmp(&other.rank))
@@ -50,6 +57,8 @@ impl PartialEq for Card {
       self.rank == other.rank
   }
 }
+
+impl Eq for Card {}
 
 impl fmt::Display for Card {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
