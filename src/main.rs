@@ -1,9 +1,9 @@
 mod game;
 
-use game::Deck;
+use game::Game;
 
 fn main() {
-  let mut deck = Deck::new();
-  deck.shuffle();
-  println!("{:?}", deck);
+  let mut game = Game::new();
+  game.deal();
+  println!("{:#?}", game);
 }
