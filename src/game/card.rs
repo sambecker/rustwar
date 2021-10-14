@@ -12,7 +12,7 @@ pub enum Suit {
   Spade,
 }
 
-#[derive(Debug, EnumIter, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Clone, Copy, EnumIter, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Rank {
   Two,
   Three,
@@ -29,6 +29,7 @@ pub enum Rank {
   Ace,
 }
 
+#[derive(Clone, Copy)]
 pub struct Card {
   pub suit: Suit,
   pub rank: Rank,
