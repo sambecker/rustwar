@@ -8,7 +8,7 @@ fn main() {
   for i in 1..100 {
     match game.tick() {
       true => (),
-      false => println!("Game ended (Round {})", i),
+      false => println!("No more cards left (Round {})", i),
     }
   }
 }
