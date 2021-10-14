@@ -14,15 +14,15 @@ impl CardSet {
     CardSet { cards: Vec::new() }
   }
   pub fn add(&mut self, card: Card) {
-    self.cards.push(card)
+    self.cards.push(card);
   }
   pub fn shuffle(&mut self) {
-    self.cards.shuffle(&mut thread_rng())
+    self.cards.shuffle(&mut thread_rng());
   }
   pub fn deal(&mut self, to: &mut CardSet, count: u8) {
     for _ in 0..count {
       if let Some(card) = self.cards.pop() {
-        to.add(card)
+        to.add(card);
       }
     }
   }

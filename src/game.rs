@@ -22,8 +22,9 @@ impl Game {
         deck.add(Card::new(suit, rank))
       }
     }
-    deck.shuffle();
 
+    deck.shuffle();
+    
     Game {
       deck: deck,
       hand_one: CardSet::new(),

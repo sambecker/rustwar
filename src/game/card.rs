@@ -1,4 +1,5 @@
 use std::fmt;
+use std::cmp::{ Eq, Ordering };
 // Iterate through enums
 use strum_macros::EnumIter;
 
@@ -10,9 +11,8 @@ pub enum Suit {
   Spade,
 }
 
-#[derive(Debug, EnumIter)]
+#[derive(Debug, EnumIter, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Rank {
-  Ace,
   Two,
   Three,
   Four,
@@ -25,6 +25,7 @@ pub enum Rank {
   Jack,
   Queen,
   King,
+  Ace,
 }
 
 pub struct Card {
@@ -35,6 +36,18 @@ pub struct Card {
 impl Card {
   pub fn new(suit: Suit, rank: Rank) -> Self {
     Card { suit: suit, rank: rank }
+  }
+}
+
+impl PartialOrd for Card {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+      Some(self.rank.cmp(&other.rank))
+  }
+}
+
+impl PartialEq for Card {
+  fn eq(&self, other: &Self) -> bool {
+      self.rank == other.rank
   }
 }
 
