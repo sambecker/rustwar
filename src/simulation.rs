@@ -1,7 +1,7 @@
-pub mod card;
-pub mod card_set;
-pub mod player;
-pub mod game;
+mod card;
+mod card_set;
+mod player;
+mod game;
 
 use game::Game;
 
