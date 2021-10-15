@@ -38,6 +38,7 @@ impl Simulation {
     self.results = Vec::new();
     self.games_ended_prematurely = 0;
   }
+  // Run one simulation
   fn run(&mut self, should_shuffle_win_pile: bool, debug: bool) {
     let mut game = Game::new("Sam", "Minnie", should_shuffle_win_pile);
     game.deal();
@@ -79,19 +80,47 @@ impl Simulation {
       println!("{:#?}", game);
     }
   }
+  // Run batch (of simulations)
   pub fn run_batch(
     &mut self,
     times: usize,
     should_shuffle_win_pile: bool,
     debug: bool,
-  ) -> (f32, usize) {
-    self.reset();
+  ) -> (f32, f32) {
     for _ in 0..times { self.run(should_shuffle_win_pile, debug); }
     let average: f32 = self.results
       .iter()
       .map(|result| result.length_in_turns as f32)
       .sum();
-    let average = average / self.results.len() as f32;
-    (average, self.games_ended_prematurely)
+    let average_length = average / self.results.len() as f32;
+    let percent_indeterminant =
+      100_f32 *
+      self.games_ended_prematurely as f32 /
+      self.results.len() as f32;
+    (average_length, percent_indeterminant)
+  }
+  // Run set (of batches of simulations)
+  pub fn run_batch_set(
+    &mut self,
+    set_length: usize,
+    batch_length: usize,
+    shuffle: bool,
+    debug: bool,
+  ) {
+    for _ in 0..set_length {
+      self.reset();
+      let (average, indeterminate) = self.run_batch(
+        batch_length,
+        shuffle,
+        debug,
+      );
+      println!(
+        "{} Games / Shuffling: {:3} {:.2} (Indeterminate games: {:.2}%)",
+        batch_length,
+        if shuffle { "YES" } else { "NO" },
+        average,
+        indeterminate,
+      );
+    }
   }
 }

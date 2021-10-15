@@ -2,8 +2,8 @@ mod simulation;
 
 use simulation::Simulation;
 
-const GROUP_LENGTH: usize = 2;
-const BATCH_LENGTH: usize = 10_000;
+const SET_LENGTH: usize  = 2;
+const BATCH_LENGTH: usize = 20_000;
 const MAX_GAME_LENGTH_IN_TURNS: usize = 10_000;
 
 fn main() {
@@ -14,29 +14,13 @@ fn main() {
   );
 
   println!(
-    "STARTING SIMULATION (MAX GAME LENGTH: {})",
+    "STARTING SIMULATION (MAX GAME LENGTH: {} TURNS)",
     MAX_GAME_LENGTH_IN_TURNS,
   );
 
   // With shuffling win piles
-  for _ in 0..GROUP_LENGTH {
-    let (average, indeterminate) = sim.run_batch(BATCH_LENGTH, true, false);
-    println!(
-      "{} Games / Shuffling: YES {:.2} (Indeterminate games: {})",
-      BATCH_LENGTH,
-      average,
-      indeterminate,
-    );
-  }
+  sim.run_batch_set(SET_LENGTH, BATCH_LENGTH, true, false);
 
   // Without shuffling win piles
-  for _ in 0..GROUP_LENGTH {
-    let (average, indeterminate) = sim.run_batch(BATCH_LENGTH, false, false);
-    println!(
-      "{} Games / Shuffling: NO  {:.2} (Indeterminate games: {})",
-      BATCH_LENGTH,
-      average,
-      indeterminate,
-    );
-  } 
+  sim.run_batch_set(SET_LENGTH, BATCH_LENGTH, false, false);
 }
