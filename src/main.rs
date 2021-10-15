@@ -1,29 +1,42 @@
-mod game;
+mod simulation;
 
-use game::Game;
+use simulation::Simulation;
+
+const GROUP_LENGTH: usize = 2;
+const BATCH_LENGTH: usize = 10_000;
+const MAX_GAME_LENGTH_IN_TURNS: usize = 10_000;
 
 fn main() {
-  let mut game = Game::new("Sam", "Minnie");
-  game.deal();
-  for i in 1..10_000 {
-    match game.tick(false) {
-      true => {
-        let player_one_total = game.player_one.card_count();
-        let player_two_total = game.player_two.card_count();
-        println!(
-          "TICK: {}({:02}) + {}({:02}) = {}",
-          game.player_one.name,
-          player_one_total,
-          game.player_two.name,
-          player_two_total,
-          player_one_total + player_two_total,
-        )
-      },
-      false => {
-        println!("No more cards left (Round {})", i);
-        break;
-      },
-    }
+  let mut sim = Simulation::new(
+    "Minnie",
+    "Sam",
+    MAX_GAME_LENGTH_IN_TURNS,
+  );
+
+  println!(
+    "STARTING SIMULATION (MAX GAME LENGTH: {})",
+    MAX_GAME_LENGTH_IN_TURNS,
+  );
+
+  // With shuffling win piles
+  for _ in 0..GROUP_LENGTH {
+    let (average, indeterminate) = sim.run_batch(BATCH_LENGTH, true, false);
+    println!(
+      "{} Games / Shuffling: YES {:.2} (Indeterminate games: {})",
+      BATCH_LENGTH,
+      average,
+      indeterminate,
+    );
   }
-  println!("{:#?}", game);
+
+  // Without shuffling win piles
+  for _ in 0..GROUP_LENGTH {
+    let (average, indeterminate) = sim.run_batch(BATCH_LENGTH, false, false);
+    println!(
+      "{} Games / Shuffling: NO  {:.2} (Indeterminate games: {})",
+      BATCH_LENGTH,
+      average,
+      indeterminate,
+    );
+  } 
 }

@@ -21,16 +21,17 @@ impl Player {
   pub fn card_count(&self) -> usize {
     self.pile_new.cards.len() + self.pile_won.cards.len()
   }
-  pub fn draw_card(&mut self) -> Option<Card> {
+  pub fn draw_card(&mut self, should_shuffle_win_pile: bool) -> Option<Card> {
+    // Card exists in new pile
     if let Some(card) = self.pile_new.cards.pop() {
-      // Card exists in new pile
       Some(card)
     } else {
+      // Card exists in won pile
       if self.pile_won.cards.len() > 0 {
-        // Card exists in won pile
+        // Swap 'new' and 'won' piles
         mem::swap(&mut self.pile_new, &mut self.pile_won);
         self.pile_won = CardSet::new();
-        self.pile_new.shuffle();
+        if should_shuffle_win_pile { self.pile_new.shuffle();  }
         self.pile_new.cards.pop()
       } else {
         None

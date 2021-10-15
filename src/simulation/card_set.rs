@@ -19,7 +19,7 @@ impl CardSet {
   pub fn shuffle(&mut self) {
     self.cards.shuffle(&mut thread_rng());
   }
-  pub fn deal(&mut self, to: &mut CardSet, count: u8) {
+  pub fn deal(&mut self, to: &mut CardSet, count: usize) {
     for _ in 0..count {
       if let Some(card) = self.cards.pop() {
         to.add(card);

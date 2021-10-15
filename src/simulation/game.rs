@@ -1,12 +1,8 @@
-pub mod card;
-pub mod card_set;
-pub mod player;
-
 use std::cmp::{ Ordering };
 
-pub use card::{ Card, Suit, Rank };
-pub use card_set::{ CardSet };
-pub use player::{ Player };
+use super::card::{ Card, Suit, Rank };
+use super::card_set::{ CardSet };
+use super::player::{ Player };
 
 use strum::IntoEnumIterator;
 
@@ -17,12 +13,17 @@ pub struct Game {
   pub deck: CardSet,
   pub player_one: Player,
   pub player_two: Player,
+  pub should_shuffle_win_pile: bool,
 }
 
 impl Game {
-  pub fn new(name_one: &str, name_two: &str) -> Self {
+  pub fn new(
+    name_one: &str,
+    name_two: &str,
+    should_shuffle_win_pile: bool,
+  ) -> Self {
     let mut deck = CardSet::new();
-  
+
     for suit in Suit::iter() {
       for rank in Rank::iter() {
         deck.add(Card::new(suit, rank))
@@ -35,6 +36,7 @@ impl Game {
       deck: deck,
       player_one: Player::new(String::from(name_one)),
       player_two: Player::new(String::from(name_two)),
+      should_shuffle_win_pile: should_shuffle_win_pile,
     }
   }
   pub fn deal(&mut self) {
@@ -44,8 +46,10 @@ impl Game {
   pub fn tick(&mut self, debug: bool) -> bool {
     let mut does_game_continue = false;
     let mut winnings: Vec<Card> = Vec::new();
-    if let Some(card_one) = self.player_one.draw_card() {
-      if let Some(card_two) = self.player_two.draw_card() {
+    if let Some(card_one) = self.player_one.draw_card(
+      self.should_shuffle_win_pile) {
+      if let Some(card_two) = self.player_two.draw_card(
+        self.should_shuffle_win_pile) {
         winnings.push(card_one);
         winnings.push(card_two);
         match card_one.cmp(&card_two) {
@@ -78,8 +82,10 @@ impl Game {
               let mut does_war_repeat = false;
               for i in 0..WAR_LENGTH + 1 {
                 does_game_continue = false;
-                if let Some(card_one) = self.player_one.draw_card() {
-                  if let Some(card_two) = self.player_two.draw_card() {
+                if let Some(card_one) = self.player_one.draw_card(
+                  self.should_shuffle_win_pile) {
+                  if let Some(card_two) = self.player_two.draw_card(
+                    self.should_shuffle_win_pile) {
                     winnings.push(card_one);
                     winnings.push(card_two);
                     if i == WAR_LENGTH {
@@ -111,7 +117,9 @@ impl Game {
                   }
                 }
                 if !does_game_continue {
-                  println!("Returning final cards to player with more");
+                  if debug {
+                    println!("Returning final cards to player with more");
+                  }
                   if winnings.len() > 0 {
                     match self.player_one.card_count().cmp(&self.player_two.card_count()) {
                       Ordering::Greater => self.player_one.win_cards(&mut winnings),
