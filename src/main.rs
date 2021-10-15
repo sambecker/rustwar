@@ -8,8 +8,8 @@ const MAX_GAME_LENGTH_IN_TURNS: usize = 10_000;
 
 fn main() {
   let mut sim = Simulation::new(
-    "Minnie",
-    "Sam",
+    "Player One",
+    "Player Two",
     MAX_GAME_LENGTH_IN_TURNS,
   );
 

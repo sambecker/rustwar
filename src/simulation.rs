@@ -40,7 +40,11 @@ impl Simulation {
   }
   // Run one simulation
   fn run(&mut self, should_shuffle_win_pile: bool, debug: bool) {
-    let mut game = Game::new("Sam", "Minnie", should_shuffle_win_pile);
+    let mut game = Game::new(
+      &self.name_one,
+      &self.name_two,
+      should_shuffle_win_pile
+    );
     game.deal();
     for i in 0..self.max_game_length_in_turns {
       let player_one_total = game.player_one.card_count();
