@@ -17,7 +17,7 @@ fn main() {
     "STARTING SIMULATION (MAX GAME LENGTH: {} TURNS)",
     MAX_GAME_LENGTH_IN_TURNS,
   );
-
+  
   // With shuffling win piles
   sim.run_batch_set(SET_LENGTH, BATCH_LENGTH, true, false);
 

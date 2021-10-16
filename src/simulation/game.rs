@@ -80,7 +80,7 @@ impl Game {
             // THE WAR ZONE
             loop {
               let mut does_war_repeat = false;
-              for i in 0..WAR_LENGTH + 1 {
+              for i in 0..=WAR_LENGTH {
                 does_game_continue = false;
                 if let Some(card_one) = self.player_one.draw_card(
                   self.should_shuffle_win_pile) {

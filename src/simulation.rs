@@ -2,8 +2,10 @@ mod card;
 mod card_set;
 mod player;
 mod game;
+mod progress;
 
 use game::Game;
+use progress::Progress;
 
 #[derive(Debug)]
 pub struct Simulation {
@@ -89,9 +91,13 @@ impl Simulation {
     &mut self,
     times: usize,
     should_shuffle_win_pile: bool,
+    progress: &mut Progress,
     debug: bool,
   ) -> (f32, f32) {
-    for _ in 0..times { self.run(should_shuffle_win_pile, debug); }
+    for _ in 0..times {
+      progress.tick();
+      self.run(should_shuffle_win_pile, debug);
+    }
     let average: f32 = self.results
       .iter()
       .map(|result| result.length_in_turns as f32)
@@ -113,18 +119,27 @@ impl Simulation {
   ) {
     for _ in 0..set_length {
       self.reset();
+      let label = "Games: ";
+      let mut progress = Progress::new(
+        batch_length,
+        label,
+        Some(80), 
+        Some(250),
+      );
       let (average, indeterminate) = self.run_batch(
         batch_length,
         shuffle,
+        &mut progress,
         debug,
       );
-      println!(
-        "{} Games / Shuffling: {:3} {:.2} (Indeterminate games: {:.2}%)",
+      progress.finish(&format!(
+        "{}{} [{:10}] {:.2} (Indeterminate games: {:.2}%)",
+        label,
         batch_length,
-        if shuffle { "YES" } else { "NO" },
+        if shuffle { "SHUFFLED" } else { "UNSHUFFLED" },
         average,
         indeterminate,
-      );
+      ));
     }
   }
 }
