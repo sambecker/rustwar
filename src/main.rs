@@ -3,7 +3,9 @@ mod simulation;
 use simulation::Simulation;
 
 const SET_LENGTH: usize  = 2;
-const BATCH_LENGTH: usize = 20_000;
+const BATCH_LENGTH: usize = if cfg!(debug_assertions)
+  { 20_000 } else
+  { 100_000 };
 const MAX_GAME_LENGTH_IN_TURNS: usize = 10_000;
 
 fn main() {
