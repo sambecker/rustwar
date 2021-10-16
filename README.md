@@ -18,4 +18,4 @@ Games: 20000 [UNSHUFFLED] 557.05 (Indeterminate games: 7.99%)
 ```
 
 ### Simulation preview
-![Console animation](simulation-preview.gif)
+![Console animation](simulation-preview-update.gif)
