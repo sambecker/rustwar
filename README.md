@@ -11,10 +11,11 @@ How long does it take for a game of war to end?
 ### Simulation output
 ```
 STARTING SIMULATION (MAX GAME LENGTH: 10000 TURNS)
-Games: 20000 [SHUFFLED  ] 233.93 (Indeterminate games: 0.00%)
-Games: 20000 [SHUFFLED  ] 232.24 (Indeterminate games: 0.00%)
-Games: 20000 [UNSHUFFLED] 563.48 (Indeterminate games: 8.67%)
-Games: 20000 [UNSHUFFLED] 557.05 (Indeterminate games: 7.99%)
+Games: 100000 [SHUFFLED  ] 267.60 (Indeterminate games: 0.00%)                  
+Games: 100000 [SHUFFLED  ] 267.73 (Indeterminate games: 0.00%)                  
+Games: 100000 [UNSHUFFLED] 585.25 (Indeterminate games: 6.63%)                  
+Games: 100000 [UNSHUFFLED] 583.84 (Indeterminate games: 6.61%)                  
+SIMULATION FINISHED (40 SECONDS)
 ```
 
 ### Simulation preview

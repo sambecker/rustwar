@@ -34,108 +34,233 @@ impl Game {
 
     Game {
       deck: deck,
-      player_one: Player::new(String::from(name_one)),
-      player_two: Player::new(String::from(name_two)),
+      player_one: Player::new(name_one),
+      player_two: Player::new(name_two),
       should_shuffle_win_pile: should_shuffle_win_pile,
     }
   }
-  pub fn deal(&mut self) {
-    self.deck.deal(&mut self.player_one.pile_new, 26);
-    self.deck.deal(&mut self.player_two.pile_new, 26);
+  pub fn deal_all_cards(&mut self, all_at_once: bool) {
+    if all_at_once {
+      let half_deck_length = self.deck.cards.len() / 2;
+      self.deck.deal_cards(&mut self.player_one.pile_new, half_deck_length);
+      self.deck.deal_cards(&mut self.player_two.pile_new, half_deck_length);
+    } else {
+      while self.deck.cards.len() > 0 {
+        self.deck.deal_card(&mut self.player_one.pile_new);
+        self.deck.deal_card(&mut self.player_two.pile_new);
+      }
+    }
   }
-  pub fn tick(&mut self, debug: bool) -> bool {
-    let mut does_game_continue = false;
-    let mut winnings: Vec<Card> = Vec::new();
-    if let Some(card_one) = self.player_one.draw_card(
-      self.should_shuffle_win_pile) {
-      if let Some(card_two) = self.player_two.draw_card(
-        self.should_shuffle_win_pile) {
-        winnings.push(card_one);
-        winnings.push(card_two);
-        match card_one.cmp(&card_two) {
-          Ordering::Greater => {
-            if debug {
-              println!(
-                "{} beat {} ({:?} vs {:?})",
-                self.player_one.name, self.player_two.name, card_one, card_two,
-              );
-            }
-            self.player_one.win_cards(&mut winnings);
-            does_game_continue = true;
-          },
-          Ordering::Less => {
-            if debug {
-              println!(
-                "{} lost to {} ({:?} vs {:?})",
-                self.player_one.name, self.player_two.name, card_one, card_two,
-              );
-            }
-            self.player_two.win_cards(&mut winnings);
-            does_game_continue = true;
-          },
-          Ordering::Equal => {
-            if debug {
-              println!("WAR Start! {:?} vs {:?}", card_one, card_two);
-            }
-            // THE WAR ZONE
-            loop {
-              let mut does_war_repeat = false;
-              for i in 0..=WAR_LENGTH {
-                does_game_continue = false;
-                if let Some(card_one) = self.player_one.draw_card(
-                  self.should_shuffle_win_pile) {
-                  if let Some(card_two) = self.player_two.draw_card(
-                    self.should_shuffle_win_pile) {
-                    winnings.push(card_one);
-                    winnings.push(card_two);
-                    if i == WAR_LENGTH {
-                      if debug {
-                        println!("WAR pot should be 8 or more: {}", winnings.len());
-                      }
-                      match card_one.cmp(&card_two) {
-                        Ordering::Greater => {
-                          if debug {
-                            println!("War winner: {}", self.player_one.name);
-                          }
-                          self.player_one.win_cards(&mut winnings);
-                        }
-                        Ordering::Less => {
-                          if debug {
-                            println!("War winner: {}", self.player_two.name);
-                          }
-                          self.player_two.win_cards(&mut winnings);
-                        }
-                        Ordering::Equal => {
-                          if debug {
-                            println!("WAR tie! {:?} vs {:?}", winnings[0], winnings[1]);
-                          }
-                          does_war_repeat = true;
-                        },
-                      }
-                    }
-                    does_game_continue = true;
-                  }
-                }
-                if !does_game_continue {
+  fn both_players_have_cards(&self) -> bool {
+    self.player_one.has_cards() && self.player_two.has_cards()
+  }
+  fn take_turns_recursive(
+    &mut self,
+    cards_to_skip: usize,
+    turns: &mut usize,
+    is_game_over: &mut bool,
+    winnings: &mut Vec<Card>,
+    debug: bool,
+  ) {
+    for i in 0..=cards_to_skip {
+      if self.both_players_have_cards() {
+        *turns += 1;
+        if let Some(card_one) = self.player_one.draw_card(
+          self.should_shuffle_win_pile) {
+          if let Some(card_two) = self.player_two.draw_card(
+            self.should_shuffle_win_pile) {
+            winnings.push(card_one);
+            winnings.push(card_two);
+            if i == cards_to_skip {
+              *is_game_over = !self.both_players_have_cards();
+              match card_one.cmp(&card_two) {
+                Ordering::Greater => {
                   if debug {
-                    println!("Returning final cards to player with more");
+                    println!(
+                      "{} beat {} ({:?} vs {:?})",
+                      self.player_one.name, self.player_two.name, card_one, card_two,
+                    );
                   }
-                  if winnings.len() > 0 {
-                    match self.player_one.card_count().cmp(&self.player_two.card_count()) {
-                      Ordering::Greater => self.player_one.win_cards(&mut winnings),
-                      Ordering::Less => self.player_two.win_cards(&mut winnings),
-                      _ => (),
-                    }
+                  self.player_one.win_cards(winnings);
+                },
+                Ordering::Less => {
+                  if debug {
+                    println!(
+                      "{} lost to {} ({:?} vs {:?})",
+                      self.player_one.name, self.player_two.name, card_one, card_two,
+                    );
                   }
-                  break;
+                  self.player_two.win_cards(winnings);
+                },
+                Ordering::Equal => {
+                  if debug {
+                    println!("WAR Start! {:?} vs {:?}", card_one, card_two);
+                  }
+                  self.take_turns_recursive(
+                    WAR_LENGTH,
+                    turns,
+                    is_game_over,
+                    winnings,
+                    debug,
+                  )
                 }
               }
-              if !does_war_repeat { break; }
             }
           }
         }
+      } else {
+        *is_game_over = true;
+        break;
       }
     }
-    does_game_continue
+  }
+  pub fn tick(&mut self, debug: bool) -> (usize, bool) {
+    let mut turns = 0;
+    let mut is_game_over = false;
+    let mut winnings: Vec<Card> = Vec::new();
+
+    self.take_turns_recursive(
+      0,
+      &mut turns,
+      &mut is_game_over,
+      &mut winnings,
+      debug,
+    );
+
+    (turns, is_game_over)
+  }
+  #[allow(dead_code)]
+  pub fn complete(&mut self, turn_limit: usize, debug: bool) -> (usize, bool) {
+    let mut turns_total = 0;
+    let mut has_exceeded_turn_limit;
+    loop {
+      let (turns, is_game_over) = self.tick(debug);
+      turns_total += turns;
+      has_exceeded_turn_limit = turns_total > turn_limit;
+      if is_game_over || has_exceeded_turn_limit { break; }
+    }
+    (turns_total, has_exceeded_turn_limit)
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn one_turn() {
+    let mut deck = CardSet::new();
+
+    // 2x Cards Per Player (dealt from the top)
+    deck.add(Card { suit: Suit::Diamond, rank: Rank::Two });  // P2
+    deck.add(Card { suit: Suit::Heart, rank: Rank::Jack });   // P1
+    deck.add(Card { suit: Suit::Diamond, rank: Rank::Six });  // P2
+    deck.add(Card { suit: Suit::Heart, rank: Rank::Ace });    // P1 (winner)
+
+    let mut game = Game {
+      deck: deck,
+      player_one: Player::new("Player One"),
+      player_two: Player::new("Player Two"),
+      should_shuffle_win_pile: true,
+    };
+    game.deal_all_cards(true);
+
+    assert_eq!(game.player_one.pile_new.cards.len(), 2);
+    assert_eq!(game.player_two.pile_new.cards.len(), 2);
+
+    let (turns_total, _) = game.complete(10_000, false);
+    
+    assert_eq!(turns_total, 2);
+
+    assert_eq!(game.player_one.card_count(), 4);
+    assert_eq!(game.player_two.card_count(), 0);
+  }
+  
+  #[test]
+  fn single_war() {
+    let mut deck = CardSet::new();
+
+    // 5x Cards Per Player (dealt from the top)
+    deck.add(Card { suit: Suit::Diamond, rank: Rank::Six });   // P2
+    deck.add(Card { suit: Suit::Heart, rank: Rank::Six });     // P1
+    deck.add(Card { suit: Suit::Diamond, rank: Rank::Seven }); // P2
+    deck.add(Card { suit: Suit::Heart, rank: Rank::Seven });   // P1
+    deck.add(Card { suit: Suit::Diamond, rank: Rank::Eight }); // P2
+    deck.add(Card { suit: Suit::Heart, rank: Rank::Eight });   // P1
+    deck.add(Card { suit: Suit::Diamond, rank: Rank::Nine });  // P2
+    deck.add(Card { suit: Suit::Heart, rank: Rank::Nine });    // P1
+    deck.add(Card { suit: Suit::Diamond, rank: Rank::Ten });   // P2
+    deck.add(Card { suit: Suit::Heart, rank: Rank::Jack });    // P1 (winner)
+
+    let mut game = Game {
+      deck: deck,
+      player_one: Player::new("Player One"),
+      player_two: Player::new("Player Two"),
+      should_shuffle_win_pile: true,
+    };
+    game.deal_all_cards(false);
+
+    assert_eq!(game.player_one.pile_new.cards.len(), 5);
+    assert_eq!(game.player_two.pile_new.cards.len(), 5);
+
+    let mut turns_total = 0;
+    loop {
+      let (turns, is_game_over) = game.tick(false);
+      turns_total += turns;
+      if is_game_over { break; }
+    }
+    assert_eq!(turns_total, 5);
+
+    assert_eq!(game.player_one.card_count(), 10);
+    assert_eq!(game.player_two.card_count(), 0);
+  }
+  
+  #[test]
+  fn double_war() {
+    let mut player_one = Player::new("Player One");
+    let mut cards = vec![
+      Card { suit: Suit::Diamond, rank: Rank::Jack },
+      Card { suit: Suit::Diamond, rank: Rank::Ten },
+      Card { suit: Suit::Diamond, rank: Rank::Nine },
+      Card { suit: Suit::Diamond, rank: Rank::Eight },
+      Card { suit: Suit::Diamond, rank: Rank::Seven },
+      Card { suit: Suit::Diamond, rank: Rank::Six },
+      Card { suit: Suit::Diamond, rank: Rank::Five },
+      Card { suit: Suit::Diamond, rank: Rank::Four },
+      Card { suit: Suit::Diamond, rank: Rank::Three },
+    ];
+    player_one.pile_new.cards.append(&mut cards);
+
+    let mut player_two = Player::new("Player Two");
+    cards = vec![
+      Card { suit: Suit::Heart, rank: Rank::Queen },
+      Card { suit: Suit::Heart, rank: Rank::Ten },
+      Card { suit: Suit::Heart, rank: Rank::Nine },
+      Card { suit: Suit::Heart, rank: Rank::Eight },
+      Card { suit: Suit::Heart, rank: Rank::Seven },
+      Card { suit: Suit::Heart, rank: Rank::Six },
+      Card { suit: Suit::Heart, rank: Rank::Five },
+      Card { suit: Suit::Heart, rank: Rank::Four },
+      Card { suit: Suit::Heart, rank: Rank::Three },
+    ];
+    player_two.pile_new.cards.append(&mut cards);
+
+    let mut game = Game {
+      deck: CardSet::new(),
+      player_one: player_one,
+      player_two: player_two,
+      should_shuffle_win_pile: true,
+    };
+
+    let mut turns_total = 0;
+    loop {
+      let (turns, is_game_over) = game.tick(false);
+      turns_total += turns;
+      if is_game_over { break; }
+    }
+    assert_eq!(turns_total, 9);
+
+    assert_eq!(game.player_one.card_count(), 0);
+    assert_eq!(game.player_two.card_count(), 18);
   }
 }

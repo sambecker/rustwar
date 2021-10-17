@@ -75,27 +75,27 @@ impl fmt::Debug for Card {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    
-    #[test]
-    fn card_compare() {
-        // Equal
-        assert_eq!(
-          Card { suit: Suit::Club, rank: Rank::Ace } ==
-          Card { suit: Suit::Diamond, rank: Rank::Ace },
-          true,
-        );
-        // Greater than
-        assert_eq!(
-          Card { suit: Suit::Club, rank: Rank::Ace } >
-          Card { suit: Suit::Diamond, rank: Rank::King },
-          true,
-        );
-        // Less than
-        assert_eq!(
-          Card { suit: Suit::Club, rank: Rank::Four } <
-          Card { suit: Suit::Diamond, rank: Rank::Five },
-          true,
-        );
-    }
+  use super::*;
+  
+  #[test]
+  fn card_compare() {
+    // Equal
+    assert_eq!(
+      Card { suit: Suit::Club, rank: Rank::Ace } ==
+      Card { suit: Suit::Diamond, rank: Rank::Ace },
+      true,
+    );
+    // Greater than
+    assert_eq!(
+      Card { suit: Suit::Club, rank: Rank::Ace } >
+      Card { suit: Suit::Diamond, rank: Rank::King },
+      true,
+    );
+    // Less than
+    assert_eq!(
+      Card { suit: Suit::Club, rank: Rank::Four } <
+      Card { suit: Suit::Diamond, rank: Rank::Five },
+      true,
+    );
+  }
 }

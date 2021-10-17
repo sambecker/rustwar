@@ -47,39 +47,39 @@ impl Simulation {
       &self.name_two,
       should_shuffle_win_pile
     );
-    game.deal();
-    for i in 0..self.max_game_length_in_turns {
+    game.deal_all_cards(true);
+    let mut turns_total = 0;
+    while turns_total < self.max_game_length_in_turns {
       let player_one_total = game.player_one.card_count();
       let player_two_total = game.player_two.card_count();
-      match game.tick(debug) {
-        true => {
-          if debug {
-            println!(
-              "TICK: {}({:02}) + {}({:02}) = {}",
-              game.player_one.name,
-              player_one_total,
-              game.player_two.name,
-              player_two_total,
-              player_one_total + player_two_total,
-            );
-          }
-        },
-        false => {
-          self.results.push(SimulationResult {
-            length_in_turns: i,
-            winner_name: String::from(&game.player_one.name),
-          });
-          if debug {
-            println!("No more cards left (Round {})", i);
-          }
-          break;
-        },
-      }
-      if i == self.max_game_length_in_turns - 1 {
-        self.games_ended_prematurely += 1;
+      let (turns, is_game_over) = game.tick(debug);
+      turns_total += turns;
+      if is_game_over {
+        self.results.push(SimulationResult {
+          length_in_turns: turns_total,
+          winner_name: String::from(&game.player_one.name),
+        });
         if debug {
-          println!("GAME ENDED PREMATURELY @ {} TURNS", i + 1);
+          println!("No more cards left (Turn {})", turns_total);
         }
+        break;
+      } else {
+        if debug {
+          println!(
+            "TICK: {}({:02}) + {}({:02}) = {}",
+            game.player_one.name,
+            player_one_total,
+            game.player_two.name,
+            player_two_total,
+            player_one_total + player_two_total,
+          );
+        }
+      }
+    }
+    if turns_total >= self.max_game_length_in_turns {
+      self.games_ended_prematurely += 1;
+      if debug {
+        println!("GAME ENDED PREMATURELY @ {} TURNS", turns_total);
       }
     }
     if debug {

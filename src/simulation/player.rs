@@ -11,15 +11,18 @@ pub struct Player {
 }
 
 impl Player {
-  pub fn new(name: String) -> Self {
+  pub fn new(name: &str) -> Self {
     Player {
-      name: name,
+      name: String::from(name),
       pile_new: CardSet::new(),
       pile_won: CardSet::new(),
     }
   }
   pub fn card_count(&self) -> usize {
     self.pile_new.cards.len() + self.pile_won.cards.len()
+  }
+  pub fn has_cards(&self) -> bool {
+    self.card_count() > 0
   }
   pub fn draw_card(&mut self, should_shuffle_win_pile: bool) -> Option<Card> {
     // Card exists in new pile
