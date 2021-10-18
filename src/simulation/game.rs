@@ -56,41 +56,49 @@ impl Game {
   }
   fn take_turns_recursive(
     &mut self,
-    cards_to_skip: usize,
-    turns: &mut usize,
+    number_of_cards_to_skip: usize,
+    number_of_turns_taken: &mut usize,
     is_game_over: &mut bool,
     winnings: &mut Vec<Card>,
     debug: bool,
   ) {
-    for i in 0..=cards_to_skip {
+    for i in 0..=number_of_cards_to_skip {
       if self.both_players_have_cards() {
-        *turns += 1;
         if let Some(card_one) = self.player_one.draw_card(
           self.should_shuffle_win_pile) {
+          winnings.push(card_one);
           if let Some(card_two) = self.player_two.draw_card(
             self.should_shuffle_win_pile) {
-            winnings.push(card_one);
             winnings.push(card_two);
-            if i == cards_to_skip {
-              *is_game_over = !self.both_players_have_cards();
+            if i == number_of_cards_to_skip {
               match card_one.cmp(&card_two) {
                 Ordering::Greater => {
                   if debug {
                     println!(
                       "{} beat {} ({:?} vs {:?})",
-                      self.player_one.name, self.player_two.name, card_one, card_two,
+                      self.player_one.name,
+                      self.player_two.name,
+                      card_one,
+                      card_two,
                     );
                   }
                   self.player_one.win_cards(winnings);
+                  *number_of_turns_taken += 1;
+                  *is_game_over = !self.both_players_have_cards();
                 },
                 Ordering::Less => {
                   if debug {
                     println!(
                       "{} lost to {} ({:?} vs {:?})",
-                      self.player_one.name, self.player_two.name, card_one, card_two,
+                      self.player_one.name,
+                      self.player_two.name,
+                      card_one,
+                      card_two,
                     );
                   }
                   self.player_two.win_cards(winnings);
+                  *number_of_turns_taken += 1;
+                  *is_game_over = !self.both_players_have_cards();
                 },
                 Ordering::Equal => {
                   if debug {
@@ -98,7 +106,7 @@ impl Game {
                   }
                   self.take_turns_recursive(
                     WAR_LENGTH,
-                    turns,
+                    number_of_turns_taken,
                     is_game_over,
                     winnings,
                     debug,
@@ -110,6 +118,19 @@ impl Game {
         }
       } else {
         *is_game_over = true;
+        if winnings.len() > 0 {
+          let player_one_wins = self.player_one.has_cards()
+            && !self.player_two.has_cards();
+          let player_two_wins = self.player_two.has_cards()
+            && !self.player_one.has_cards();
+          if player_one_wins {
+            self.player_one.win_cards(winnings);
+          } else if player_two_wins {
+            self.player_two.win_cards(winnings);
+          } else {
+            if debug { println!("DRAW GAME") ;}
+          }
+        }
         break;
       }
     }
@@ -137,6 +158,15 @@ impl Game {
       turns_total += turns;
       did_game_end_prematurely = turns_total > turn_limit;
       if is_game_over || did_game_end_prematurely { break; }
+    }
+    if !did_game_end_prematurely
+      && self.player_one.has_cards()
+      && self.player_two.has_cards() {
+      panic!(
+        "Game did not end properly! {} vs {}",
+        self.player_one.card_count(),
+        self.player_two.card_count(),
+      );
     }
     (turns_total, did_game_end_prematurely)
   }
@@ -208,7 +238,7 @@ mod tests {
       turns_total += turns;
       if is_game_over { break; }
     }
-    assert_eq!(turns_total, 5);
+    assert_eq!(turns_total, 1);
 
     assert_eq!(game.player_one.card_count(), 10);
     assert_eq!(game.player_two.card_count(), 0);
@@ -257,7 +287,7 @@ mod tests {
       turns_total += turns;
       if is_game_over { break; }
     }
-    assert_eq!(turns_total, 9);
+    assert_eq!(turns_total, 1);
 
     assert_eq!(game.player_one.card_count(), 0);
     assert_eq!(game.player_two.card_count(), 18);
