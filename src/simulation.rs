@@ -48,38 +48,24 @@ impl Simulation {
       should_shuffle_win_pile
     );
     game.deal_all_cards(true);
-    let mut turns_total = 0;
-    while turns_total < self.max_game_length_in_turns {
-      let player_one_total = game.player_one.card_count();
-      let player_two_total = game.player_two.card_count();
-      let (turns, is_game_over) = game.tick(debug);
-      turns_total += turns;
-      if is_game_over {
-        self.results.push(SimulationResult {
-          length_in_turns: turns_total,
-          winner_name: String::from(&game.player_one.name),
-        });
-        if debug {
-          println!("No more cards left (Turn {})", turns_total);
-        }
-        break;
-      } else {
-        if debug {
-          println!(
-            "TICK: {}({:02}) + {}({:02}) = {}",
-            game.player_one.name,
-            player_one_total,
-            game.player_two.name,
-            player_two_total,
-            player_one_total + player_two_total,
-          );
-        }
-      }
-    }
-    if turns_total >= self.max_game_length_in_turns {
+
+    let (turns_total, did_game_end_prematurely) = game.complete(
+      self.max_game_length_in_turns,
+      debug,
+    );
+
+    if did_game_end_prematurely {
       self.games_ended_prematurely += 1;
       if debug {
-        println!("GAME ENDED PREMATURELY @ {} TURNS", turns_total);
+        println!("Game ended prematurely @ turn {}", turns_total);
+      }
+    } else {
+      self.results.push(SimulationResult {
+        length_in_turns: turns_total,
+        winner_name: String::from(&game.player_one.name),
+      });
+      if debug {
+        println!("Game finished @ turn {}", turns_total);
       }
     }
     if debug {

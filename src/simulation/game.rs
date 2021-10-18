@@ -114,7 +114,7 @@ impl Game {
       }
     }
   }
-  pub fn tick(&mut self, debug: bool) -> (usize, bool) {
+  fn tick(&mut self, debug: bool) -> (usize, bool) {
     let mut turns = 0;
     let mut is_game_over = false;
     let mut winnings: Vec<Card> = Vec::new();
@@ -129,17 +129,16 @@ impl Game {
 
     (turns, is_game_over)
   }
-  #[allow(dead_code)]
   pub fn complete(&mut self, turn_limit: usize, debug: bool) -> (usize, bool) {
     let mut turns_total = 0;
-    let mut has_exceeded_turn_limit;
+    let mut did_game_end_prematurely;
     loop {
       let (turns, is_game_over) = self.tick(debug);
       turns_total += turns;
-      has_exceeded_turn_limit = turns_total > turn_limit;
-      if is_game_over || has_exceeded_turn_limit { break; }
+      did_game_end_prematurely = turns_total > turn_limit;
+      if is_game_over || did_game_end_prematurely { break; }
     }
-    (turns_total, has_exceeded_turn_limit)
+    (turns_total, did_game_end_prematurely)
   }
 }
 
