@@ -2,10 +2,9 @@ mod card;
 mod card_set;
 mod player;
 mod game;
-mod progress;
+pub mod progress_multi;
 
 use game::Game;
-use progress::Progress;
 
 #[derive(Debug)]
 pub struct Simulation {
@@ -23,22 +22,14 @@ pub struct SimulationResult {
 }
 
 impl Simulation {
-  pub fn new(
-    name_one: &str,
-    name_two: &str,
-    max_game_length_in_turns: usize,
-  ) -> Self {
+  pub fn new(max_game_length_in_turns: usize) -> Self {
     Simulation {
-      name_one: String::from(name_one),
-      name_two: String::from(name_two),
+      name_one: String::from("Player One"),
+      name_two: String::from("Player Two"),
       max_game_length_in_turns: max_game_length_in_turns,
       games_ended_prematurely: 0,
       results: Vec::new(),
     }
-  }
-  fn reset(&mut self) {
-    self.results = Vec::new();
-    self.games_ended_prematurely = 0;
   }
   // Run one simulation
   fn run(&mut self, should_shuffle_win_pile: bool, debug: bool) {
@@ -73,15 +64,15 @@ impl Simulation {
     }
   }
   // Run batch (of simulations)
-  pub fn run_batch(
+  pub fn run_batch<F: FnMut()>(
     &mut self,
     times: usize,
     should_shuffle_win_pile: bool,
-    progress: &mut Progress,
+    callback: &mut F,
     debug: bool,
   ) -> (f32, f32) {
     for _ in 0..times {
-      progress.tick();
+      callback();
       self.run(should_shuffle_win_pile, debug);
     }
     let average: f32 = self.results
@@ -96,36 +87,26 @@ impl Simulation {
     (average_length, percent_indeterminant)
   }
   // Run set (of batches of simulations)
-  pub fn run_batch_set(
+  pub fn run_batch_with_bars<F: FnMut(Option<&str>)>(
     &mut self,
-    set_length: usize,
+    bar_callback: &mut F,
+    label: &str,
     batch_length: usize,
     shuffle: bool,
     debug: bool,
   ) {
-    for _ in 0..set_length {
-      self.reset();
-      let label = "Games: ";
-      let mut progress = Progress::new(
-        batch_length,
-        label,
-        Some(80), 
-        Some(250),
-      );
-      let (average, indeterminate) = self.run_batch(
-        batch_length,
-        shuffle,
-        &mut progress,
-        debug,
-      );
-      progress.finish(&format!(
-        "{}{} [{:10}] {:.2} (Indeterminate games: {:.2}%)",
-        label,
-        batch_length,
-        if shuffle { "SHUFFLED" } else { "UNSHUFFLED" },
-        average,
-        indeterminate,
-      ));
-    }
+    let (average, indeterminate) = self.run_batch(
+      batch_length,
+      shuffle,
+      &mut || { bar_callback(None); },
+      debug,
+    );
+    bar_callback(Some(&format!(
+      "{}{} {:.2} (Indeterminate games: {:.2}%)",
+      label,
+      batch_length,
+      average,
+      indeterminate,
+    )));
   }
 }
