@@ -6,6 +6,8 @@ pub mod progress_multi;
 
 use game::Game;
 
+use num_format::{ Locale, ToFormattedString };
+
 #[derive(Debug)]
 pub struct Simulation {
   name_one: String,
@@ -63,7 +65,7 @@ impl Simulation {
       println!("{:#?}", game);
     }
   }
-  // Run batch (of simulations)
+  // Run batch
   pub fn run_batch<F: FnMut()>(
     &mut self,
     times: usize,
@@ -86,7 +88,7 @@ impl Simulation {
       self.results.len() as f32;
     (average_length, percent_indeterminant)
   }
-  // Run set (of batches of simulations)
+  // Run batch with bars
   pub fn run_batch_with_bars<F: FnMut(Option<&str>)>(
     &mut self,
     bar_callback: &mut F,
@@ -104,7 +106,7 @@ impl Simulation {
     bar_callback(Some(&format!(
       "{}{} {:.2} (Indeterminate games: {:.2}%)",
       label,
-      batch_length,
+      batch_length.to_formatted_string(&Locale::en),
       average,
       indeterminate,
     )));

@@ -51,6 +51,9 @@ fn main() {
   }
 
   if let Ok(elapsed) = now.elapsed() {
-    println!("SIMULATION FINISHED ({} SECONDS)", elapsed.as_secs());
+    println!(
+      "SIMULATION FINISHED ({:.1} SECONDS)",
+      elapsed.as_millis() as f32 / 1000_f32,
+    );
   }
 }
