@@ -21,7 +21,7 @@ fn main() {
 
   let now =  SystemTime::now();
 
-  let mut bars = ProgressMulti::new(None, None);
+  let bars = ProgressMulti::new(None, None);
 
   let mut threads: Vec<JoinHandle<()>> = vec![];
 

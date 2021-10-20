@@ -42,7 +42,7 @@ impl ProgressMulti {
 
     increment_or_finish_callback
   }
-  pub fn start(&mut self) {
+  pub fn start(&self) {
     self.progress_bars.listen();
   }
 }
